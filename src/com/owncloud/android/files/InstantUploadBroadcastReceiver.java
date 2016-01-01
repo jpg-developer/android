@@ -43,7 +43,11 @@ import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Video;
 import android.webkit.MimeTypeMap;
 
-
+// JPG TODO:    This name could be argued to be misleading,
+//              Reason is, this class does not receive broadcasts regarding instant-uploads.
+//              It receives broadcasts regarding new photos/videos; instant-upload is what the class
+//              does out of the information it receives.
+//              The following name describes IMO this class in a better way: NewPictureOrVideoBroadcastReceiver
 public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
 
     private static String TAG = InstantUploadBroadcastReceiver.class.getName();
