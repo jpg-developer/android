@@ -207,6 +207,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
                 context.startService(i);
             } else {
                 Log_OC.w(TAG, "Instant upload file " + f.getAbsolutePath() + " does not exist anymore");
+                // JPG TODO: is recorg being removed from database? or does it stay there forever...?
             }
         }
     }
@@ -267,15 +268,28 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
     // JPG TODO: current implementation of this method mimics original behavior, i.e. target account
     //           equals current account; need to expand this method so that it supports the following
     //           options too:
-    //              - target all
+    //              - targe t all
     //              - target whitelist
     private List<Account> resolveTargetAccounts(Context context) {
-        List<Account> result = new ArrayList<>();
-        result.add( AccountUtils.getCurrentOwnCloudAccount(context) );
-        return result;
 
-        // JPG TODO: debug only!
+        // DEFAULT IMPLEMENTATION: current account
+        //List<Account> result = new ArrayList<>();
+        //result.add( AccountUtils.getCurrentOwnCloudAccount(context) );
+        //return result;
+
+        // ALTERNATIVE IMPLEMENTATION 1: all accounts
         //return AccountUtils.getAllOwnCloudAccounts(context);
+
+        // ALTERNATIVE IMPLEMENTATION 1: white-list
+        return getSampleWhiteListedAccounts();
+    }
+
+    // JPG TODO: debug only!
+    private List<Account> getSampleWhiteListedAccounts() {
+        List<Account> result = new ArrayList<>();
+        result.add( new Account(  "jp@192.168.1.105/owncloud", "owncloud") );
+        result.add( new Account("javi@192.168.1.105/owncloud", "owncloud") );
+        return result;
     }
 
     private void saveFileToUploadIntoDatabase(Context context, Account account, MediaContentEntry mediaContentEntry) {
