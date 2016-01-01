@@ -182,7 +182,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
 
         if (!intent.hasExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY)
                 && isOnline(context)
-                && (!instantPictureUploadViaWiFiOnly(context) || (instantPictureUploadViaWiFiOnly(context) == isConnectedViaWiFi(context) == true))) {
+                && (!instantPictureUploadViaWiFiOnly(context) || (instantPictureUploadViaWiFiOnly(context) && isConnectedViaWiFi(context)))) {
             DbHandler db = new DbHandler(context);
             Cursor c = db.getAwaitingFiles();
             if (c.moveToFirst()) {
