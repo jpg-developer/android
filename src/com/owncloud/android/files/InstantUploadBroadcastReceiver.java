@@ -113,21 +113,6 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         context.startService(createFileUploadingIntent(context, account, mediaContentEntry));
     }
 
-    private Intent addInstantUploadBehaviour(Intent i, Context context){
-        SharedPreferences appPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String behaviour = appPreferences.getString("prefs_instant_behaviour", "NOTHING");
-
-        if (behaviour.equalsIgnoreCase("NOTHING")) {
-            Log_OC.d(TAG, "upload file and do nothing");
-            i.putExtra(FileUploader.KEY_LOCAL_BEHAVIOUR, FileUploader.LOCAL_BEHAVIOUR_FORGET);
-        } else if (behaviour.equalsIgnoreCase("MOVE")) {
-            i.putExtra(FileUploader.KEY_LOCAL_BEHAVIOUR, FileUploader.LOCAL_BEHAVIOUR_MOVE);
-            Log_OC.d(TAG, "upload file and move file to oc folder");
-            // JPG TODO: Q: is "oc folder" account specific or common to all accounts??
-        }
-        return i;
-    }
-
     private void handleNewVideoAction(Context context, Intent intent) {
         Log_OC.w(TAG, "New video received");
         
@@ -257,6 +242,21 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         intent = addInstantUploadBehaviour(intent, context);
 
         return intent;
+    }
+
+    private Intent addInstantUploadBehaviour(Intent i, Context context) {
+        SharedPreferences appPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String behaviour = appPreferences.getString("prefs_instant_behaviour", "NOTHING");
+
+        if (behaviour.equalsIgnoreCase("NOTHING")) {
+            Log_OC.d(TAG, "upload file and do nothing");
+            i.putExtra(FileUploader.KEY_LOCAL_BEHAVIOUR, FileUploader.LOCAL_BEHAVIOUR_FORGET);
+        } else if (behaviour.equalsIgnoreCase("MOVE")) {
+            i.putExtra(FileUploader.KEY_LOCAL_BEHAVIOUR, FileUploader.LOCAL_BEHAVIOUR_MOVE);
+            Log_OC.d(TAG, "upload file and move file to oc folder");
+            // JPG TODO: Q: is "oc folder" account specific or common to all accounts??
+        }
+        return i;
     }
 
     private boolean needToPosponeFileUploading(Context context) {
