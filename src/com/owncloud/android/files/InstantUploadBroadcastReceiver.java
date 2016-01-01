@@ -80,11 +80,6 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
     }
 
     private void handleNewPictureAction(Context context, Intent intent) {
-        Cursor c = null;
-        String file_path = null;
-        String file_name = null;
-        String mime_type = null;
-
         Log_OC.w(TAG, "New photo received");
         
         if (!instantPictureUploadEnabled(context)) {
@@ -100,16 +95,16 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
 
         // JPG TODO: consider extracting logic to its own method in order to:
         // JPG TODO: 1.- simplify this method
-        // JPG TODO: 2.- avoid code duplication, very similar piece of code is used in handleNewVideoAction(..)
+        // JPG TODO: 2.- avoid code duplication, since very similar piece of code is used in handleNewVideoAction(..)
         String[] CONTENT_PROJECTION = { Images.Media.DATA, Images.Media.DISPLAY_NAME, Images.Media.MIME_TYPE, Images.Media.SIZE };
-        c = context.getContentResolver().query(intent.getData(), CONTENT_PROJECTION, null, null, null);
+        Cursor c = context.getContentResolver().query(intent.getData(), CONTENT_PROJECTION, null, null, null);
         if (!c.moveToFirst()) {
             Log_OC.e(TAG, "Couldn't resolve given uri: " + intent.getDataString());
             return;
         }
-        file_path = c.getString(c.getColumnIndex(Images.Media.DATA));
-        file_name = c.getString(c.getColumnIndex(Images.Media.DISPLAY_NAME));
-        mime_type = c.getString(c.getColumnIndex(Images.Media.MIME_TYPE));
+        final String file_path = c.getString(c.getColumnIndex(Images.Media.DATA));
+        final String file_name = c.getString(c.getColumnIndex(Images.Media.DISPLAY_NAME));
+        final String mime_type = c.getString(c.getColumnIndex(Images.Media.MIME_TYPE));
         c.close();
         
         Log_OC.d(TAG, file_path + "");
@@ -154,11 +149,6 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
     }
 
     private void handleNewVideoAction(Context context, Intent intent) {
-        Cursor c = null;
-        String file_path = null;
-        String file_name = null;
-        String mime_type = null;
-
         Log_OC.w(TAG, "New video received");
         
         if (!instantVideoUploadEnabled(context)) {
@@ -173,14 +163,14 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         }
 
         String[] CONTENT_PROJECTION = { Video.Media.DATA, Video.Media.DISPLAY_NAME, Video.Media.MIME_TYPE, Video.Media.SIZE };
-        c = context.getContentResolver().query(intent.getData(), CONTENT_PROJECTION, null, null, null);
+        Cursor c = context.getContentResolver().query(intent.getData(), CONTENT_PROJECTION, null, null, null);
         if (!c.moveToFirst()) {
             Log_OC.e(TAG, "Couldn't resolve given uri: " + intent.getDataString());
             return;
         } 
-        file_path = c.getString(c.getColumnIndex(Video.Media.DATA));
-        file_name = c.getString(c.getColumnIndex(Video.Media.DISPLAY_NAME));
-        mime_type = c.getString(c.getColumnIndex(Video.Media.MIME_TYPE));
+        final String file_path = c.getString(c.getColumnIndex(Video.Media.DATA));
+        final String file_name = c.getString(c.getColumnIndex(Video.Media.DISPLAY_NAME));
+        final String mime_type = c.getString(c.getColumnIndex(Video.Media.MIME_TYPE));
         c.close();
         Log_OC.d(TAG, file_path + "");
 
@@ -200,7 +190,6 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         i = addInstantUploadBehaviour(i, context);
 
         context.startService(i);
-
     }
 
     private void handleConnectivityAction(Context context, Intent intent) {
