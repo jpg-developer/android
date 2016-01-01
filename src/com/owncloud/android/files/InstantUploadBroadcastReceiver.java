@@ -21,8 +21,6 @@
 package com.owncloud.android.files;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.List;
 
 import com.owncloud.android.MainApp;
 import com.owncloud.android.authentication.AccountUtils;
@@ -195,6 +193,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
+        // JPG TODO: separate retrieving list of files to be uploaded from the actual uploading
         DbHandler db = new DbHandler(context);
         Cursor c = db.getAwaitingFiles();
         if (c.moveToFirst()) {
