@@ -20,6 +20,8 @@
 
 package com.owncloud.android.authentication;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Locale;
 
 import com.owncloud.android.MainApp;
@@ -83,6 +85,10 @@ public class AccountUtils {
         return defaultAccount;
     }
 
+    public static Collection<Account> getAllOwnCloudAccounts(Context context) {
+        Account[] ocAccounts = AccountManager.get(context).getAccountsByType(MainApp.getAccountType());
+        return Arrays.asList(ocAccounts);
+    }
     
     public static boolean exists(Account account, Context context) {
         Account[] ocAccounts = AccountManager.get(context).getAccountsByType(
