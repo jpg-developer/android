@@ -100,6 +100,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         Cursor c = context.getContentResolver().query(intent.getData(), CONTENT_PROJECTION, null, null, null);
         if (!c.moveToFirst()) {
             Log_OC.e(TAG, "Couldn't resolve given uri: " + intent.getDataString());
+            c.close();
             return;
         }
         final String file_path = c.getString(c.getColumnIndex(Images.Media.DATA));
@@ -166,6 +167,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         Cursor c = context.getContentResolver().query(intent.getData(), CONTENT_PROJECTION, null, null, null);
         if (!c.moveToFirst()) {
             Log_OC.e(TAG, "Couldn't resolve given uri: " + intent.getDataString());
+            c.close();
             return;
         } 
         final String file_path = c.getString(c.getColumnIndex(Video.Media.DATA));
