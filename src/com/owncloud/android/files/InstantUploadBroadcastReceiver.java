@@ -103,9 +103,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
 
         // save always temporally the picture to upload
         // JPG TODO: Q: why is this done for pictures only? why not for videos?
-        DbHandler db = new DbHandler(context);
-        db.putFileForLater(mediaContentEntry.file_path, account.name, null);
-        db.close();
+        saveFileToUploadIntoDatabase(context, account, mediaContentEntry);
 
         if (needToPosponeFileUploading(context)) {
             Log_OC.d(TAG, "Not a good time to upload a file, postpone!");
@@ -239,6 +237,12 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         cursor.close();
 
         return result;
+    }
+
+    private void saveFileToUploadIntoDatabase(Context context, Account account, MediaContentEntry mediaContentEntry) {
+        DbHandler db = new DbHandler(context);
+        db.putFileForLater(mediaContentEntry.file_path, account.name, null);
+        db.close();
     }
 
     private Intent createFileUploadingIntent(Context context, Account account, MediaContentEntry mediaContentEntry) {
