@@ -120,38 +120,6 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    // JPG TODO: debug only
-    private void handleNewPictureAction_PROVE_OF_CONCEPT(Context context, Intent intent) {
-        Log_OC.w(TAG, "New photo received");
-
-        if (!instantPictureUploadEnabled(context)) {
-            Log_OC.d(TAG, "Instant picture upload disabled, ignoring new picture");
-            return;
-        }
-
-        MediaContentEntry mediaContentEntry = resolveMediaContent(context, intent, PICTURE_CONTENT_PROJECTION);
-        if (mediaContentEntry == null) {
-            Log_OC.e(TAG, "Failed to resolve new picture!");
-            return;
-        }
-
-        Log_OC.d(TAG, mediaContentEntry.file_path + "");
-
-        for (Account account: AccountUtils.getAllOwnCloudAccounts(context)) {
-            // save always temporally the picture to upload
-            // JPG TODO: Q: why is this done for pictures only? why not for videos?
-            saveFileToUploadIntoDatabase(context, account, mediaContentEntry);
-
-            if (needToPosponeFileUploading(context))
-            {
-                Log_OC.d(TAG, "Not a good time to upload a file, postpone!");
-                return;
-            }
-
-            context.startService(createFileUploadingIntent(context, account, mediaContentEntry));
-        }
-    }
-
     private void handleNewVideoAction(Context context, Intent intent) {
         Log_OC.w(TAG, "New video received");
         
