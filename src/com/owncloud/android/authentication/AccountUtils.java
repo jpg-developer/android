@@ -20,8 +20,9 @@
 
 package com.owncloud.android.authentication;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 
 import com.owncloud.android.MainApp;
@@ -58,34 +59,55 @@ public class AccountUtils {
      *                      account). If none is available and valid, returns null.
      */
     public static Account getCurrentOwnCloudAccount(Context context) {
-        Account[] ocAccounts = AccountManager.get(context).getAccountsByType(
-                MainApp.getAccountType());
+        final List<Account> ocAccounts = getAllOwnCloudAccounts(context);
         Account defaultAccount = null;
 
-        SharedPreferences appPreferences = PreferenceManager
-                .getDefaultSharedPreferences(context);
-        String accountName = appPreferences
-                .getString("select_oc_account", null);
+        final SharedPreferences appPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        final String accountName = appPreferences.getString("select_oc_account", null);
 
         // account validation: the saved account MUST be in the list of ownCloud Accounts known by the AccountManager
         if (accountName != null) {
-            for (Account account : ocAccounts) {
-                if (account.name.equals(accountName)) {
-                    defaultAccount = account;
-                    break;
-                }
-            }
+            defaultAccount = getAccountByName(ocAccounts, accountName);
         }
-        
-        if (defaultAccount == null && ocAccounts.length != 0) {
+
+        if (defaultAccount == null && ocAccounts.size() != 0) {
             // take first account as fallback
-            defaultAccount = ocAccounts[0];
+            defaultAccount = ocAccounts.get(0);
         }
 
         return defaultAccount;
     }
 
-    public static Collection<Account> getAllOwnCloudAccounts(Context context) {
+    private static Account getAccountByName(List<Account> accounts, String name) {
+        assert accounts != null;
+        assert name != null;
+        final List<Account> accountsMatchingName = filterAccountsByName(accounts, name);
+        final int count = accountsMatchingName.size();
+
+        if (count == 0) {
+            Log_OC.w(TAG, "No account matches name " + name);
+            return null;
+        } else {
+            if (count > 1) {
+                Log_OC.w(TAG, "More than one account matching name " + name + ", taking first in the list");
+            }
+            return accountsMatchingName.get(0);
+        }
+    }
+
+    private static List<Account> filterAccountsByName(List<Account> accounts, String name) {
+        assert accounts != null;
+        assert name != null;
+        List<Account> filteredAccounts = new ArrayList<>();
+        for (Account account: accounts) {
+            if (account.name.equals(name)) {
+                filteredAccounts.add(account);
+            }
+        }
+        return filteredAccounts;
+    }
+
+    public static List<Account> getAllOwnCloudAccounts(Context context) {
         Account[] ocAccounts = AccountManager.get(context).getAccountsByType(MainApp.getAccountType());
         return Arrays.asList(ocAccounts);
     }
