@@ -185,8 +185,12 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        if (    isOnline(context)
-                && (!instantPictureUploadViaWiFiOnly(context) || (instantPictureUploadViaWiFiOnly(context) && isConnectedViaWiFi(context)))) {
+        if (!isOnline(context)) {
+            Log_OC.d(TAG, "Not online, do nothing");
+            return;
+        }
+
+        if (!instantPictureUploadViaWiFiOnly(context) || (instantPictureUploadViaWiFiOnly(context) && isConnectedViaWiFi(context))) {
             DbHandler db = new DbHandler(context);
             Cursor c = db.getAwaitingFiles();
             if (c.moveToFirst()) {
