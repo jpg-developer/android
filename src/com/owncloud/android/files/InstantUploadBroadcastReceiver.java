@@ -94,6 +94,9 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
+        // JPG TODO: consider extracting logic to its own method in order to:
+        // JPG TODO: 1.- simplify this method
+        // JPG TODO: 2.- avoid code duplication, very similar piece of code is used in handleNewVideoAction(..)
         String[] CONTENT_PROJECTION = { Images.Media.DATA, Images.Media.DISPLAY_NAME, Images.Media.MIME_TYPE, Images.Media.SIZE };
         c = context.getContentResolver().query(intent.getData(), CONTENT_PROJECTION, null, null, null);
         if (!c.moveToFirst()) {
@@ -116,6 +119,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
+        // JPG TODO: consider extracting this logic to another method, e.g. createFileUploadingIntent(..)
         Intent i = new Intent(context, FileUploader.class);
         i.putExtra(FileUploader.KEY_ACCOUNT, account);
         i.putExtra(FileUploader.KEY_LOCAL_FILE, file_path);
@@ -140,6 +144,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         } else if (behaviour.equalsIgnoreCase("MOVE")) {
             i.putExtra(FileUploader.KEY_LOCAL_BEHAVIOUR, FileUploader.LOCAL_BEHAVIOUR_MOVE);
             Log_OC.d(TAG, "upload file and move file to oc folder");
+            // JPG TODO: Q: is "oc folder" account specific or common to all accounts??
         }
         return i;
     }
