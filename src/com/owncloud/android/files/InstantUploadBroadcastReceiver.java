@@ -79,36 +79,6 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    static class MediaContentEntry
-    {
-        String file_path = null;
-        String file_name = null;
-        String mime_type = null;
-    }
-
-    private static final String[] PICTURE_CONTENT_PROJECTION = { Images.Media.DATA, Images.Media.DISPLAY_NAME, Images.Media.MIME_TYPE, Images.Media.SIZE };
-    private static final String[] VIDEO_CONTENT_PROJECTION   = {  Video.Media.DATA,  Video.Media.DISPLAY_NAME,  Video.Media.MIME_TYPE,  Video.Media.SIZE };
-
-    private static MediaContentEntry resolveMediaContent(Context context, Intent intent, String[] contentProjection)
-    {
-        MediaContentEntry result = null;
-
-        Cursor cursor = context.getContentResolver().query(intent.getData(), contentProjection, null, null, null);
-
-        if (cursor.moveToFirst()) {
-            result = new MediaContentEntry();
-            result.file_path = cursor.getString(cursor.getColumnIndex(Images.Media.DATA));
-            result.file_name = cursor.getString(cursor.getColumnIndex(Images.Media.DISPLAY_NAME));
-            result.mime_type = cursor.getString(cursor.getColumnIndex(Images.Media.MIME_TYPE));
-        } else {
-            Log_OC.e(TAG, "Couldn't resolve given uri: " + intent.getDataString());
-        }
-
-        cursor.close();
-
-        return result;
-    }
-
     private void handleNewPictureAction(Context context, Intent intent) {
         Log_OC.w(TAG, "New photo received");
         
@@ -239,6 +209,36 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             db.close();
         }
 
+    }
+
+    static class MediaContentEntry
+    {
+        String file_path = null;
+        String file_name = null;
+        String mime_type = null;
+    }
+
+    private static final String[] PICTURE_CONTENT_PROJECTION = { Images.Media.DATA, Images.Media.DISPLAY_NAME, Images.Media.MIME_TYPE, Images.Media.SIZE };
+    private static final String[] VIDEO_CONTENT_PROJECTION   = {  Video.Media.DATA,  Video.Media.DISPLAY_NAME,  Video.Media.MIME_TYPE,  Video.Media.SIZE };
+
+    private static MediaContentEntry resolveMediaContent(Context context, Intent intent, String[] contentProjection)
+    {
+        MediaContentEntry result = null;
+
+        Cursor cursor = context.getContentResolver().query(intent.getData(), contentProjection, null, null, null);
+
+        if (cursor.moveToFirst()) {
+            result = new MediaContentEntry();
+            result.file_path = cursor.getString(cursor.getColumnIndex(Images.Media.DATA));
+            result.file_name = cursor.getString(cursor.getColumnIndex(Images.Media.DISPLAY_NAME));
+            result.mime_type = cursor.getString(cursor.getColumnIndex(Images.Media.MIME_TYPE));
+        } else {
+            Log_OC.e(TAG, "Couldn't resolve given uri: " + intent.getDataString());
+        }
+
+        cursor.close();
+
+        return result;
     }
 
     private Intent createFileUploadingIntent(Context context, Account account, MediaContentEntry mediaContentEntry) {
