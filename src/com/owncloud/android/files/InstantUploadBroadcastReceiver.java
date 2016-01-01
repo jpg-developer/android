@@ -180,8 +180,12 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        if (!intent.hasExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY)
-                && isOnline(context)
+        if (intent.hasExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY)) {
+            Log_OC.d(TAG, "No connectivity, do nothing");
+            return;
+        }
+
+        if (    isOnline(context)
                 && (!instantPictureUploadViaWiFiOnly(context) || (instantPictureUploadViaWiFiOnly(context) && isConnectedViaWiFi(context)))) {
             DbHandler db = new DbHandler(context);
             Cursor c = db.getAwaitingFiles();
