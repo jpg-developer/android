@@ -21,6 +21,9 @@
 package com.owncloud.android.files;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import com.owncloud.android.MainApp;
 import com.owncloud.android.authentication.AccountUtils;
@@ -193,47 +196,64 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        // JPG TODO: separate retrieving list of files to be uploaded from the actual uploading
+        for (AwaitingFileRecord awaitingFileRecord: getAwaitingFileRecords(context)) {
+            File f = new File(awaitingFileRecord.file_path);
+            if (f.exists()) {
+                Account account = new Account(awaitingFileRecord.account_name, MainApp.getAccountType());
+
+                // JPG TODO: mimeType does not seem to be actually used, any reason to keep it??
+                String mimeType = null;
+                try {
+                    mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                            f.getName().substring(f.getName().lastIndexOf('.') + 1));
+
+                } catch (Throwable e) {
+                    Log_OC.e(TAG, "Trying to find out MIME type of a file without extension: " + f.getName());
+                }
+
+                if (mimeType == null) {
+                    mimeType = "application/octet-stream";
+                }
+
+                Intent i = new Intent(context, FileUploader.class);
+                i.putExtra(FileUploader.KEY_ACCOUNT, account);
+                i.putExtra(FileUploader.KEY_LOCAL_FILE, awaitingFileRecord.file_path);
+                i.putExtra(FileUploader.KEY_REMOTE_FILE, FileStorageUtils.getInstantUploadFilePath(context, f.getName()));
+                i.putExtra(FileUploader.KEY_UPLOAD_TYPE, FileUploader.UPLOAD_SINGLE_FILE);
+                // JPG TODO: FileUploader.KEY_MIME_TYPE is not specified, Q: bug or intended??
+                i.putExtra(FileUploader.KEY_INSTANT_UPLOAD, true);
+
+                // instant upload behaviour
+                i = addInstantUploadBehaviour(i, context);
+
+                context.startService(i);
+            } else {
+                Log_OC.w(TAG, "Instant upload file " + f.getAbsolutePath() + " does not exist anymore");
+            }
+        }
+    }
+
+    static class AwaitingFileRecord {
+        String account_name;
+        String file_path;
+    }
+
+    private List<AwaitingFileRecord> getAwaitingFileRecords(Context context) {
+        List<AwaitingFileRecord> result = new ArrayList<>();
+
         DbHandler db = new DbHandler(context);
         Cursor c = db.getAwaitingFiles();
         if (c.moveToFirst()) {
             do {
-                String account_name = c.getString(c.getColumnIndex("account"));
-                String file_path = c.getString(c.getColumnIndex("path"));
-                File f = new File(file_path);
-                if (f.exists()) {
-                    Account account = new Account(account_name, MainApp.getAccountType());
-
-                    String mimeType = null;
-                    try {
-                        mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                                f.getName().substring(f.getName().lastIndexOf('.') + 1));
-
-                    } catch (Throwable e) {
-                        Log_OC.e(TAG, "Trying to find out MIME type of a file without extension: " + f.getName());
-                    }
-                    if (mimeType == null)
-                        mimeType = "application/octet-stream";
-
-                    Intent i = new Intent(context, FileUploader.class);
-                    i.putExtra(FileUploader.KEY_ACCOUNT, account);
-                    i.putExtra(FileUploader.KEY_LOCAL_FILE, file_path);
-                    i.putExtra(FileUploader.KEY_REMOTE_FILE, FileStorageUtils.getInstantUploadFilePath(context, f.getName()));
-                    i.putExtra(FileUploader.KEY_UPLOAD_TYPE, FileUploader.UPLOAD_SINGLE_FILE);
-                    i.putExtra(FileUploader.KEY_INSTANT_UPLOAD, true);
-
-                    // instant upload behaviour
-                    i = addInstantUploadBehaviour(i, context);
-
-                    context.startService(i);
-
-                } else {
-                    Log_OC.w(TAG, "Instant upload file " + f.getAbsolutePath() + " dont exist anymore");
-                }
+                AwaitingFileRecord record = new AwaitingFileRecord();
+                record.account_name = c.getString(c.getColumnIndex("account"));
+                record.file_path    = c.getString(c.getColumnIndex("path"));
             } while (c.moveToNext());
         }
         c.close();
         db.close();
+
+        return result;
     }
 
     static class MediaContentEntry
