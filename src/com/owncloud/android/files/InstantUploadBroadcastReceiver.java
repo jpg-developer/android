@@ -79,6 +79,46 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
+    static class MediaContentEntry
+    {
+        String file_path = null;
+        String file_name = null;
+        String mime_type = null;
+    }
+
+    private static final String[] PICTURE_CONTENT_PROJECTION = { Images.Media.DATA, Images.Media.DISPLAY_NAME, Images.Media.MIME_TYPE, Images.Media.SIZE };
+    private static final String[] VIDEO_CONTENT_PROJECTION   = {  Video.Media.DATA,  Video.Media.DISPLAY_NAME,  Video.Media.MIME_TYPE,  Video.Media.SIZE  };
+
+    private static MediaContentEntry resolvePictureContent(Context context, Intent intent)
+    {
+        return resolveMediaContent(context, intent, VIDEO_CONTENT_PROJECTION);
+    }
+
+    private static MediaContentEntry resolveVideoContent(Context context, Intent intent)
+    {
+        return resolveMediaContent(context, intent, VIDEO_CONTENT_PROJECTION);
+    }
+
+    private static MediaContentEntry resolveMediaContent(Context context, Intent intent, String[] contentProjection)
+    {
+        MediaContentEntry result = null;
+
+        Cursor cursor = context.getContentResolver().query(intent.getData(), contentProjection, null, null, null);
+
+        if (cursor.moveToFirst()) {
+            result = new MediaContentEntry();
+            result.file_path = cursor.getString(cursor.getColumnIndex(Images.Media.DATA));
+            result.file_name = cursor.getString(cursor.getColumnIndex(Images.Media.DISPLAY_NAME));
+            result.mime_type = cursor.getString(cursor.getColumnIndex(Images.Media.MIME_TYPE));
+        } else {
+            Log_OC.e(TAG, "Couldn't resolve given uri: " + intent.getDataString());
+        }
+
+        cursor.close();
+
+        return result;
+    }
+
     private void handleNewPictureAction(Context context, Intent intent) {
         Log_OC.w(TAG, "New photo received");
         
@@ -93,26 +133,18 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        // JPG TODO: consider extracting logic to its own method in order to:
-        // JPG TODO: 1.- simplify this method
-        // JPG TODO: 2.- avoid code duplication, since very similar piece of code is used in handleNewVideoAction(..)
-        String[] CONTENT_PROJECTION = { Images.Media.DATA, Images.Media.DISPLAY_NAME, Images.Media.MIME_TYPE, Images.Media.SIZE };
-        Cursor c = context.getContentResolver().query(intent.getData(), CONTENT_PROJECTION, null, null, null);
-        if (!c.moveToFirst()) {
-            Log_OC.e(TAG, "Couldn't resolve given uri: " + intent.getDataString());
-            c.close();
+        MediaContentEntry mediaContentEntry = resolvePictureContent(context, intent);
+        if (mediaContentEntry == null) {
+            Log_OC.e(TAG, "Failed to resolve new picture!");
             return;
         }
-        final String file_path = c.getString(c.getColumnIndex(Images.Media.DATA));
-        final String file_name = c.getString(c.getColumnIndex(Images.Media.DISPLAY_NAME));
-        final String mime_type = c.getString(c.getColumnIndex(Images.Media.MIME_TYPE));
-        c.close();
-        
-        Log_OC.d(TAG, file_path + "");
+
+        Log_OC.d(TAG, mediaContentEntry.file_path + "");
 
         // save always temporally the picture to upload
+        // JPG TODO: Q: why is this done for pictures only? why not for videos?
         DbHandler db = new DbHandler(context);
-        db.putFileForLater(file_path, account.name, null);
+        db.putFileForLater(mediaContentEntry.file_path, account.name, null);
         db.close();
 
         if (!isOnline(context) || (instantPictureUploadViaWiFiOnly(context) && !isConnectedViaWiFi(context))) {
@@ -122,10 +154,10 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         // JPG TODO: consider extracting this logic to another method, e.g. createFileUploadingIntent(..)
         Intent i = new Intent(context, FileUploader.class);
         i.putExtra(FileUploader.KEY_ACCOUNT, account);
-        i.putExtra(FileUploader.KEY_LOCAL_FILE, file_path);
-        i.putExtra(FileUploader.KEY_REMOTE_FILE, FileStorageUtils.getInstantUploadFilePath(context, file_name));
+        i.putExtra(FileUploader.KEY_LOCAL_FILE, mediaContentEntry.file_path);
+        i.putExtra(FileUploader.KEY_REMOTE_FILE, FileStorageUtils.getInstantUploadFilePath(context, mediaContentEntry.file_name));
         i.putExtra(FileUploader.KEY_UPLOAD_TYPE, FileUploader.UPLOAD_SINGLE_FILE);
-        i.putExtra(FileUploader.KEY_MIME_TYPE, mime_type);
+        i.putExtra(FileUploader.KEY_MIME_TYPE, mediaContentEntry.mime_type);
         i.putExtra(FileUploader.KEY_INSTANT_UPLOAD, true);
 
         // instant upload behaviour
@@ -163,18 +195,11 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        String[] CONTENT_PROJECTION = { Video.Media.DATA, Video.Media.DISPLAY_NAME, Video.Media.MIME_TYPE, Video.Media.SIZE };
-        Cursor c = context.getContentResolver().query(intent.getData(), CONTENT_PROJECTION, null, null, null);
-        if (!c.moveToFirst()) {
-            Log_OC.e(TAG, "Couldn't resolve given uri: " + intent.getDataString());
-            c.close();
+        MediaContentEntry mediaContentEntry = resolvePictureContent(context, intent);
+        if (mediaContentEntry == null) {
+            Log_OC.e(TAG, "Failed to resolve new video!");
             return;
-        } 
-        final String file_path = c.getString(c.getColumnIndex(Video.Media.DATA));
-        final String file_name = c.getString(c.getColumnIndex(Video.Media.DISPLAY_NAME));
-        final String mime_type = c.getString(c.getColumnIndex(Video.Media.MIME_TYPE));
-        c.close();
-        Log_OC.d(TAG, file_path + "");
+        }
 
         if (!isOnline(context) || (instantVideoUploadViaWiFiOnly(context) && !isConnectedViaWiFi(context))) {
             return;
@@ -182,10 +207,10 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
 
         Intent i = new Intent(context, FileUploader.class);
         i.putExtra(FileUploader.KEY_ACCOUNT, account);
-        i.putExtra(FileUploader.KEY_LOCAL_FILE, file_path);
-        i.putExtra(FileUploader.KEY_REMOTE_FILE, FileStorageUtils.getInstantVideoUploadFilePath(context, file_name));
+        i.putExtra(FileUploader.KEY_LOCAL_FILE, mediaContentEntry.file_path);
+        i.putExtra(FileUploader.KEY_REMOTE_FILE, FileStorageUtils.getInstantVideoUploadFilePath(context, mediaContentEntry.file_name));
         i.putExtra(FileUploader.KEY_UPLOAD_TYPE, FileUploader.UPLOAD_SINGLE_FILE);
-        i.putExtra(FileUploader.KEY_MIME_TYPE, mime_type);
+        i.putExtra(FileUploader.KEY_MIME_TYPE, mediaContentEntry.mime_type);
         i.putExtra(FileUploader.KEY_INSTANT_UPLOAD, true);
 
         // instant upload behaviour
