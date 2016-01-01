@@ -87,7 +87,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
     }
 
     private static final String[] PICTURE_CONTENT_PROJECTION = { Images.Media.DATA, Images.Media.DISPLAY_NAME, Images.Media.MIME_TYPE, Images.Media.SIZE };
-    private static final String[] VIDEO_CONTENT_PROJECTION   = {  Video.Media.DATA,  Video.Media.DISPLAY_NAME,  Video.Media.MIME_TYPE,  Video.Media.SIZE  };
+    private static final String[] VIDEO_CONTENT_PROJECTION   = {  Video.Media.DATA,  Video.Media.DISPLAY_NAME,  Video.Media.MIME_TYPE,  Video.Media.SIZE };
 
     private static MediaContentEntry resolveMediaContent(Context context, Intent intent, String[] contentProjection)
     {
@@ -137,23 +137,12 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         db.putFileForLater(mediaContentEntry.file_path, account.name, null);
         db.close();
 
-        if (!isOnline(context) || (instantPictureUploadViaWiFiOnly(context) && !isConnectedViaWiFi(context))) {
+        if (needToPosponeFileUploading(context)) {
+            Log_OC.d(TAG, "Not a good time to upload a file, postpone!");
             return;
         }
 
-        // JPG TODO: consider extracting this logic to another method, e.g. createFileUploadingIntent(..)
-        Intent i = new Intent(context, FileUploader.class);
-        i.putExtra(FileUploader.KEY_ACCOUNT, account);
-        i.putExtra(FileUploader.KEY_LOCAL_FILE, mediaContentEntry.file_path);
-        i.putExtra(FileUploader.KEY_REMOTE_FILE, FileStorageUtils.getInstantUploadFilePath(context, mediaContentEntry.file_name));
-        i.putExtra(FileUploader.KEY_UPLOAD_TYPE, FileUploader.UPLOAD_SINGLE_FILE);
-        i.putExtra(FileUploader.KEY_MIME_TYPE, mediaContentEntry.mime_type);
-        i.putExtra(FileUploader.KEY_INSTANT_UPLOAD, true);
-
-        // instant upload behaviour
-        i = addInstantUploadBehaviour(i, context);
-
-        context.startService(i);
+        context.startService(createFileUploadingIntent(context, account, mediaContentEntry));
     }
 
     private Intent addInstantUploadBehaviour(Intent i, Context context){
@@ -191,22 +180,12 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        if (!isOnline(context) || (instantVideoUploadViaWiFiOnly(context) && !isConnectedViaWiFi(context))) {
+        if (needToPosponeFileUploading(context)) {
+            Log_OC.d(TAG, "Not a good time to upload a file, postpone!");
             return;
         }
 
-        Intent i = new Intent(context, FileUploader.class);
-        i.putExtra(FileUploader.KEY_ACCOUNT, account);
-        i.putExtra(FileUploader.KEY_LOCAL_FILE, mediaContentEntry.file_path);
-        i.putExtra(FileUploader.KEY_REMOTE_FILE, FileStorageUtils.getInstantVideoUploadFilePath(context, mediaContentEntry.file_name));
-        i.putExtra(FileUploader.KEY_UPLOAD_TYPE, FileUploader.UPLOAD_SINGLE_FILE);
-        i.putExtra(FileUploader.KEY_MIME_TYPE, mediaContentEntry.mime_type);
-        i.putExtra(FileUploader.KEY_INSTANT_UPLOAD, true);
-
-        // instant upload behaviour
-        i = addInstantUploadBehaviour(i, context);
-
-        context.startService(i);
+        context.startService( createFileUploadingIntent(context, account, mediaContentEntry) );
     }
 
     private void handleConnectivityAction(Context context, Intent intent) {
@@ -262,11 +241,31 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
 
     }
 
+    private Intent createFileUploadingIntent(Context context, Account account, MediaContentEntry mediaContentEntry) {
+        Intent intent = new Intent(context, FileUploader.class);
+        intent.putExtra(FileUploader.KEY_ACCOUNT, account);
+        intent.putExtra(FileUploader.KEY_LOCAL_FILE, mediaContentEntry.file_path);
+        intent.putExtra(FileUploader.KEY_REMOTE_FILE, FileStorageUtils.getInstantVideoUploadFilePath(context, mediaContentEntry.file_name));
+        intent.putExtra(FileUploader.KEY_UPLOAD_TYPE, FileUploader.UPLOAD_SINGLE_FILE);
+        intent.putExtra(FileUploader.KEY_MIME_TYPE, mediaContentEntry.mime_type);
+        intent.putExtra(FileUploader.KEY_INSTANT_UPLOAD, true);
+
+        intent = addInstantUploadBehaviour(intent, context);
+
+        return intent;
+    }
+
+    private boolean needToPosponeFileUploading(Context context) {
+        return !isOnline(context) || (instantVideoUploadViaWiFiOnly(context) && !isConnectedViaWiFi(context));
+    }
+
+    // JPG TODO: why public? whe else is using this code??
     public static boolean isOnline(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
     }
 
+    // JPG TODO: why public? whe else is using this code??
     public static boolean isConnectedViaWiFi(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm != null && cm.getActiveNetworkInfo() != null
@@ -274,18 +273,22 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
                 && cm.getActiveNetworkInfo().getState() == State.CONNECTED;
     }
 
+    // JPG TODO: why public? whe else is using this code??
     public static boolean instantPictureUploadEnabled(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean("instant_uploading", false);
     }
 
+    // JPG TODO: why public? whe else is using this code??
     public static boolean instantVideoUploadEnabled(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean("instant_video_uploading", false);
     }
 
+    // JPG TODO: why public? whe else is using this code??
     public static boolean instantPictureUploadViaWiFiOnly(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean("instant_upload_on_wifi", false);
     }
-    
+
+    // JPG TODO: why public? whe else is using this code??
     public static boolean instantVideoUploadViaWiFiOnly(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean("instant_video_upload_on_wifi", false);
     }
