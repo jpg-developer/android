@@ -89,11 +89,14 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        Account account = AccountUtils.getCurrentOwnCloudAccount(context);
-        if (account == null) {
+        // JPG TODO: review the order of the statements in this method
+        final List<Account> targetAccounts = resolveTargetAccounts(context);
+        if (targetAccounts.size() == 0) {
             Log_OC.w(TAG, "No ownCloud account found for instant upload, aborting");
             return;
         }
+
+        Log_OC.d(TAG, "Target account(s) include: " + targetAccounts.toString());
 
         MediaContentEntry mediaContentEntry = resolveMediaContent(context, intent, PICTURE_CONTENT_PROJECTION);
         if (mediaContentEntry == null) {
@@ -103,18 +106,21 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
 
         Log_OC.d(TAG, mediaContentEntry.file_path + "");
 
-        // save always temporally the picture to upload
-        // JPG TODO: Q: why is this done for pictures only? why not for videos?
-        saveFileToUploadIntoDatabase(context, account, mediaContentEntry);
-
         if (needToPosponeFileUploading(context)) {
             Log_OC.d(TAG, "Not a good time to upload a file, postpone!");
             return;
         }
 
-        context.startService(createFileUploadingIntent(context, account, mediaContentEntry));
+        for (Account account: targetAccounts) {
+            // save always temporally the picture to upload
+            // JPG TODO: Q: why is this done for pictures only? why not for videos?
+            saveFileToUploadIntoDatabase(context, account, mediaContentEntry);
+
+            context.startService(createFileUploadingIntent(context, account, mediaContentEntry));
+        }
     }
 
+    // JPG TODO: debug only
     private void handleNewPictureAction_PROVE_OF_CONCEPT(Context context, Intent intent) {
         Log_OC.w(TAG, "New photo received");
 
@@ -154,9 +160,10 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        Account account = AccountUtils.getCurrentOwnCloudAccount(context);
-        if (account == null) {
-            Log_OC.w(TAG, "No owncloud account found for instant upload, aborting");
+        // JPG TODO: review the order of the statements in this method
+        final List<Account> targetAccounts = resolveTargetAccounts(context);
+        if (targetAccounts.size() == 0) {
+            Log_OC.w(TAG, "No ownCloud account found for instant upload, aborting");
             return;
         }
 
@@ -171,10 +178,14 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        context.startService( createFileUploadingIntent(context, account, mediaContentEntry) );
+        for (Account account: targetAccounts) {
+            context.startService(createFileUploadingIntent(context, account, mediaContentEntry));
+        }
     }
 
     private void handleConnectivityAction(Context context, Intent intent) {
+        Log_OC.w(TAG, "Connectivity state change");
+
         if (!instantPictureUploadEnabled(context)) {
             Log_OC.d(TAG, "Instant upload disabled, don't upload anything");
             return;
@@ -283,6 +294,20 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         cursor.close();
 
         return result;
+    }
+
+    // JPG TODO: current implementation of this method mimics original behavior, i.e. target account
+    //           equals current account; need to expand this method so that it supports the following
+    //           options too:
+    //              - target all
+    //              - target whitelist
+    private List<Account> resolveTargetAccounts(Context context) {
+        List<Account> result = new ArrayList<>();
+        result.add( AccountUtils.getCurrentOwnCloudAccount(context) );
+        return result;
+
+        // JPG TODO: debug only!
+        //return AccountUtils.getAllOwnCloudAccounts(context);
     }
 
     private void saveFileToUploadIntoDatabase(Context context, Account account, MediaContentEntry mediaContentEntry) {
