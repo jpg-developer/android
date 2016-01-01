@@ -89,16 +89,6 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
     private static final String[] PICTURE_CONTENT_PROJECTION = { Images.Media.DATA, Images.Media.DISPLAY_NAME, Images.Media.MIME_TYPE, Images.Media.SIZE };
     private static final String[] VIDEO_CONTENT_PROJECTION   = {  Video.Media.DATA,  Video.Media.DISPLAY_NAME,  Video.Media.MIME_TYPE,  Video.Media.SIZE  };
 
-    private static MediaContentEntry resolvePictureContent(Context context, Intent intent)
-    {
-        return resolveMediaContent(context, intent, VIDEO_CONTENT_PROJECTION);
-    }
-
-    private static MediaContentEntry resolveVideoContent(Context context, Intent intent)
-    {
-        return resolveMediaContent(context, intent, VIDEO_CONTENT_PROJECTION);
-    }
-
     private static MediaContentEntry resolveMediaContent(Context context, Intent intent, String[] contentProjection)
     {
         MediaContentEntry result = null;
@@ -133,7 +123,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        MediaContentEntry mediaContentEntry = resolvePictureContent(context, intent);
+        MediaContentEntry mediaContentEntry = resolveMediaContent(context, intent, PICTURE_CONTENT_PROJECTION);
         if (mediaContentEntry == null) {
             Log_OC.e(TAG, "Failed to resolve new picture!");
             return;
@@ -195,7 +185,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        MediaContentEntry mediaContentEntry = resolvePictureContent(context, intent);
+        MediaContentEntry mediaContentEntry = resolveMediaContent(context, intent, VIDEO_CONTENT_PROJECTION);
         if (mediaContentEntry == null) {
             Log_OC.e(TAG, "Failed to resolve new video!");
             return;
