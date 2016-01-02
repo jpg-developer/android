@@ -268,21 +268,41 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
 
     private List<Account> resolveTargetAccounts(Context context) {
 
-        String targetAccountsMode = Preferences.getPreferenceValueInstantUploadTargetAccountsMode(context);
+        final List<Account> allAccounts = AccountUtils.getAllOwnCloudAccounts(context);
 
-        if (targetAccountsMode.equals("CURRENT")) {
-            List<Account> result = new ArrayList<>();
-            result.add( AccountUtils.getCurrentOwnCloudAccount(context) );
-            return result;
-        } else if (targetAccountsMode.equals("ALL")) {
-            return AccountUtils.getAllOwnCloudAccounts(context);
-        } else if (targetAccountsMode.equals("WHITELIST")) {
-            return geWhiteListedAccounts(context);
-        } else {
+        if (allAccounts.size() == 0) {
+            // At the time of this writing we worked under the assumption that user has added at
+            // least one account before he is able to enter preferences activity and enable
+            // instant-upload.
+            // Under that assumption, the condition leading to executing this block should never
+            // be met. If it does, it means either the initial assumption is no longer valid or
+            // we simply screwed somewhere else.
             assert false;
-            Log_OC.d(TAG, "unknown target-accounts-mode value: " + targetAccountsMode);
+            Log_OC.e(TAG, "assertion failure: trying to resolve instant-upload target-account(s) while not having any account!");
             return new ArrayList<>();
+        } else if (allAccounts.size() == 1) {
+            return getCurrentAccount(context);
+        } else { // allAccounts.size() > 1
+            final String targetAccountsMode = Preferences.getPreferenceValueInstantUploadTargetAccountsMode(context);
+
+            if (targetAccountsMode.equals("CURRENT")) {
+                return getCurrentAccount(context);
+            } else if (targetAccountsMode.equals("ALL")) {
+                return allAccounts;
+            } else if (targetAccountsMode.equals("WHITELIST")) {
+                return geWhiteListedAccounts(context);
+            } else {
+                assert false;
+                Log_OC.e(TAG, "assertion failure: unknown target-accounts-mode value: " + targetAccountsMode);
+                return new ArrayList<>();
+            }
         }
+    }
+
+    static private List<Account> getCurrentAccount(Context context) {
+        List<Account> result = new ArrayList<>();
+        result.add(AccountUtils.getCurrentOwnCloudAccount(context));
+        return result;
     }
 
     static private List<Account> geWhiteListedAccounts(Context context) {
