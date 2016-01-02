@@ -285,7 +285,17 @@ public class Preferences extends PreferenceActivity
                 });
             }
         }
-        
+
+       // JPG TODO: Values within setup.xml (such as as recommend_enabled) are directly accessed
+       //           using statements as the one below.
+       //           Code is correct, however it's not directly clear to the new-comer that
+       //           "recommend_enabled" is part of the "setup" settings.
+       //           This all could be improved by making the access to "setup settings" values
+       //           explicit. E.g. have a SetupSettings class with getter methods (setters too if
+       //           applicable)
+       //           Another benefit of such approach is, we keep implementation details (in this case,
+       //           usage of setup.xml file for storing certain settings) away from the code using
+       //           the functionality.
        boolean recommendEnabled = getResources().getBoolean(R.bool.recommend_enabled);
        Preference pRecommend =  findPreference("recommend");
         if (pRecommend != null){
