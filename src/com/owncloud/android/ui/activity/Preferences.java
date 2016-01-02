@@ -422,17 +422,6 @@ public class Preferences extends PreferenceActivity
             return true;
           }
         });
-        // JPG TODO: debug only
-        mPrefInstantUploadTargetAccountsMode.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-          @Override
-          public boolean onPreferenceClick(Preference preference) {
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            final String value = sharedPreferences.getString("prefs_instant_upload_target_accounts_mode", "ALL");
-            Toast.makeText(getApplicationContext(), "Initial value is: " + value, Toast.LENGTH_SHORT).show();
-            return true;
-          }
-        });
-
 
         final Activity activity = this;
         mPrefInstantUploadTargetAccountsWhitelist = findPreference("prefs_instant_upload_target_accounts_whitelist");
