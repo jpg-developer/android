@@ -446,8 +446,9 @@ public class Preferences extends PreferenceActivity
                   updateDisplayInstantUploadTargetAccountsWhitelistSummary( extractNames(selectedAccounts) );
               }
             };
+
             SelectAccountsFromListTask.start(activity,
-                                             "xxx Target accounts whitelist",
+                                             getString(R.string.prefs_instant_upload_target_accounts_whitelist),
                                              AccountUtils.getAllOwnCloudAccounts(getApplicationContext()),
                                              getPreferenceValueInstantUploadTargetAccountsWhitelist(getApplicationContext()), //extractNames(AccountUtils.getAllOwnCloudAccounts(getApplicationContext())),
                                              listener);
@@ -593,13 +594,13 @@ public class Preferences extends PreferenceActivity
             // be met. If it does, it means either the initial assumption is no longer valid or
             // we simply screwed somewhere else.
             assert false;
-            return "xxx Has no white-listed accounts!";
+            return getApplicationContext().getString(R.string.prefs_instant_upload_target_accounts_whitelist_empty);
         } else if (whitelistAccountNames.size() == 1) {
             return whitelistAccountNames.get(0);
         } else {
-            // JPG TODO: Q: need to resolve locale value at runtime?
-            final String template = "xxx %s and %d more";
-            return String.format(Locale.US, template, whitelistAccountNames.get(0), whitelistAccountNames.size() - 1);
+            return String.format(getApplicationContext().getString(R.string.prefs_instant_upload_target_accounts_whitelist_one_plus_n_more),
+                                 whitelistAccountNames.get(0),
+                                 whitelistAccountNames.size() - 1);
         }
     }
 
