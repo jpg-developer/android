@@ -81,6 +81,8 @@ import com.owncloud.android.ui.RadioButtonPreference;
 import com.owncloud.android.ui.dialog.OwnCloudListPreference;
 import com.owncloud.android.utils.DisplayUtils;
 
+import java.util.List;
+
 
 /**
  * An Activity that allows the user to change the application's settings.
@@ -560,11 +562,24 @@ public class Preferences extends PreferenceActivity
     // JPG TODO: as explained in comment above, I don't agree with current naming approach,
     //           still keeping it for consistency
     private void toggleInstantUploadTargetAccountsWhitelist(String targetAccountsMode) {
-        if (targetAccountsMode.equals("WHITELIST")) {
+        if (targetAccountsMode.equals("WHITELIST") && hasMultipleAccounts()) {
           mPrefInstantUploadCategory.addPreference(mPrefInstantUploadTargetAccountsWhitelist);
         } else {
           mPrefInstantUploadCategory.removePreference(mPrefInstantUploadTargetAccountsWhitelist);
         }
+    }
+
+    private void updateDisplayInstantUploadTargetAccountsMode() {
+        if (hasMultipleAccounts()) {
+          mPrefInstantUploadCategory.addPreference(mPrefInstantUploadTargetAccountsMode);
+        } else {
+          mPrefInstantUploadCategory.removePreference(mPrefInstantUploadTargetAccountsMode);
+        }
+    }
+
+    private boolean hasMultipleAccounts() {
+      final List<Account> accounts = AccountUtils.getAllOwnCloudAccounts(getApplicationContext());
+      return accounts.size() > 1;
     }
 
     @Override
@@ -617,6 +632,9 @@ public class Preferences extends PreferenceActivity
 
         // Populate the accounts category with the list of accounts
         addAccountsCheckboxPreferences();
+
+        // show/hide target-accounts-mode and accounts-whitelist based on number of accounts
+        updateDisplayInstantUploadTargetAccountsMode();
 
         // show/hide accounts-whitelist preference based on target-accounts-mode value
         toggleInstantUploadTargetAccountsWhitelist( getPreferenceValueInstantUploadTargetAccountsMode(getApplicationContext()) );
