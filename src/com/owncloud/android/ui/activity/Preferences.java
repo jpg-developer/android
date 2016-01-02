@@ -25,6 +25,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -78,9 +79,11 @@ import com.owncloud.android.files.services.FileUploader;
 import com.owncloud.android.lib.common.utils.Log_OC;
 import com.owncloud.android.services.OperationsService;
 import com.owncloud.android.ui.RadioButtonPreference;
-import com.owncloud.android.ui.dialog.OwnCloudListPreference;
+import com.owncloud.android.ui.tasks.SelectAccountsFromListTask;
 import com.owncloud.android.utils.DisplayUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -430,11 +433,25 @@ public class Preferences extends PreferenceActivity
         });
 
 
+        final Activity activity = this;
         mPrefInstantUploadTargetAccountsWhitelist = findPreference("prefs_instant_upload_target_accounts_whitelist");
         mPrefInstantUploadTargetAccountsWhitelist.setOnPreferenceClickListener(new OnPreferenceClickListener() {
           @Override
           public boolean onPreferenceClick(Preference preference) {
-            Toast.makeText(getApplicationContext(), "TODO: show white-list dialog", Toast.LENGTH_SHORT).show();
+            SelectAccountsFromListTask.Listener listener = new SelectAccountsFromListTask.Listener() {
+              @Override
+              public void onSelectedAccounts(List<Account> selectedAccounts) {
+                final String message = "Selected " + selectedAccounts.size() + " item(s): " + extractNames(selectedAccounts);
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+
+                setPreferenceValueInstantUploadTargetAccountsWhitelist(getApplicationContext(), extractNames(selectedAccounts));
+              }
+            };
+            SelectAccountsFromListTask.start(activity,
+                                             "xxx Target accounts whitelist",
+                                             AccountUtils.getAllOwnCloudAccounts(getApplicationContext()),
+                                             getPreferenceValueInstantUploadTargetAccountsWhitelist(getApplicationContext()), //extractNames(AccountUtils.getAllOwnCloudAccounts(getApplicationContext())),
+                                             listener);
             return true;
           }
         });
@@ -941,7 +958,6 @@ public class Preferences extends PreferenceActivity
         return mDownloaderBinder;
     }
 
-
     @Override
     public FileUploader.FileUploaderBinder getFileUploaderBinder() {
         return mUploaderBinder;
@@ -999,5 +1015,44 @@ public class Preferences extends PreferenceActivity
     static public String getPreferenceValueInstantUploadTargetAccountsMode(Context context) {
       SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
       return sharedPreferences.getString("prefs_instant_upload_target_accounts_mode", "ALL");
+    }
+
+    static public List<String> getPreferenceValueInstantUploadTargetAccountsWhitelist(Context context) {
+      SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+      final String value = sharedPreferences.getString("prefs_instant_upload_target_accounts_whitelist", "");
+      return splitCommaSeparatedValues(value);
+    }
+
+    static public void setPreferenceValueInstantUploadTargetAccountsWhitelist(Context context, List<String> accountNames) {
+      SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+      SharedPreferences.Editor editor = sharedPreferences.edit();
+      editor.putString("prefs_instant_upload_target_accounts_whitelist", toCommaSeparatedString(accountNames));
+      editor.commit();
+    }
+
+    static private List<String> extractNames(List<Account> accounts) {
+      List<String> names = new ArrayList<>();
+      for (Account account: accounts) {
+        names.add(account.name);
+      }
+      return names;
+    }
+
+    // JPG TODO: move to a general purpose helper class such as Strings
+    static private List<String> splitCommaSeparatedValues(String commaSeparatedList) {
+      List<String> items = Arrays.asList(commaSeparatedList.split("\\s*,\\s*"));
+      return items;
+    }
+
+    // JPG TODO: move to a general purpose helper class such as Strings
+    static private String toCommaSeparatedString(List<String> listOfStrings) {
+      String result = "";
+      for (int index = 0; index < listOfStrings.size(); index++) {
+        if (index > 0) {
+          result += ",";
+        }
+        result += listOfStrings.get(index);
+      }
+      return result;
     }
 }
