@@ -20,4 +20,16 @@
 		<item>NOTHING</item>
 		<item>MOVE</item>
 	</string-array>
+
+	<string-array name="pref_instant_upload_target_accounts_mode_entries">
+		<item>xxx Current account</item>
+		<item>xxx All accounts</item>
+		<item>xxx White listed accounts</item>
+	</string-array>
+
+	<string-array name="pref_instant_upload_target_accounts_mode_entryValues">
+		<item>CURRENT</item>
+		<item>ALL</item>
+		<item>WHITELIST</item>
+	</string-array>
 </resources>
