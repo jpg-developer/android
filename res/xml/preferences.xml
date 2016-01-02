@@ -44,6 +44,13 @@
 	    <com.owncloud.android.ui.CheckBoxPreferenceWithLongTitle
 	        				android:title="@string/instant_video_upload_on_wifi"
 	        				android:key="instant_video_upload_on_wifi"/>
+		<!--
+			JPG TODO: 	"behavior" within prefs_instant_behaviour is too generic as a name.
+			 			Furthermore it says anything about the aspect the setting applies to.
+			 			Consider the following name:
+			 				- prefs_instant_upload_original_file_post_operation
+			 				- prefs_instant_upload_original_file_destiny
+		-->
 		<com.owncloud.android.ui.dialog.OwnCloudListPreference android:key="prefs_instant_behaviour"
 			android:dialogTitle="@string/prefs_instant_behaviour_dialogTitle"
 			android:title="@string/prefs_instant_behaviour_title"
