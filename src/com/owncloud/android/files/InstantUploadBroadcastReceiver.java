@@ -277,37 +277,28 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         } else if (targetAccountsMode.equals("ALL")) {
             return AccountUtils.getAllOwnCloudAccounts(context);
         } else if (targetAccountsMode.equals("WHITELIST")) {
-            return geWhiteListedAccounts();
+            return geWhiteListedAccounts(context);
         } else {
             assert false;
             Log_OC.d(TAG, "unknown target-accounts-mode value: " + targetAccountsMode);
             return new ArrayList<>();
         }
-
-        // DEFAULT IMPLEMENTATION: current account
-        //List<Account> result = new ArrayList<>();
-        //result.add( AccountUtils.getCurrentOwnCloudAccount(context) );
-        //return result;
-
-        // ALTERNATIVE IMPLEMENTATION 1: all accounts
-        //return AccountUtils.getAllOwnCloudAccounts(context);
-
-        // ALTERNATIVE IMPLEMENTATION 1: white-list
-        //return getSampleWhiteListedAccounts();
     }
 
-    private List<Account> geWhiteListedAccounts() {
-        List<Account> result = new ArrayList<>();
-        // JPG TODO
-        return result;
-    }
+    static private List<Account> geWhiteListedAccounts(Context context) {
 
-    // JPG TODO: debug only!
-    private List<Account> getSampleWhiteListedAccounts() {
-        List<Account> result = new ArrayList<>();
-        result.add( new Account(  "jp@192.168.1.105/owncloud", "owncloud") );
-        result.add( new Account("javi@192.168.1.105/owncloud", "owncloud") );
-        return result;
+        final List<Account> allAccounts = AccountUtils.getAllOwnCloudAccounts(context);
+        final List<String>  whitelistAccountNames = Preferences.getPreferenceValueInstantUploadTargetAccountsWhitelist(context);
+
+        List<Account> whitelistAccounts = new ArrayList<>();
+
+        for (Account account: allAccounts) {
+            if (whitelistAccountNames.contains(account.name)) {
+                whitelistAccounts.add(account);
+            }
+        }
+
+        return whitelistAccounts;
     }
 
     private void saveFileToUploadIntoDatabase(Context context, Account account, MediaContentEntry mediaContentEntry) {
