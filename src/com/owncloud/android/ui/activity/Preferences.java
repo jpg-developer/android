@@ -1052,8 +1052,12 @@ public class Preferences extends PreferenceActivity
 
     // JPG TODO: move to a general purpose helper class such as Strings
     static private List<String> splitCommaSeparatedValues(String commaSeparatedList) {
-      List<String> items = Arrays.asList(commaSeparatedList.split("\\s*,\\s*"));
-      return items;
+        if (commaSeparatedList.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            List<String> items = Arrays.asList(commaSeparatedList.split("\\s*,\\s*"));
+            return items;
+        }
     }
 
     // JPG TODO: move to a general purpose helper class such as Strings
