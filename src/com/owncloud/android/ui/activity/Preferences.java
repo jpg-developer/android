@@ -577,12 +577,6 @@ public class Preferences extends PreferenceActivity
 
     private String formatPrefInstantUploadTargetAccountsWhitelistSummary(List<String> whitelistAccountNames) {
         if (whitelistAccountNames.size() == 0) {
-            // At the time of this writing we worked under the assumption that this Activity can
-            // only be displayed once the user has added at least one account.
-            // Under that assumption, the condition leading to executing this block should never
-            // be met. If it does, it means either the initial assumption is no longer valid or
-            // we simply screwed somewhere else.
-            assert false;
             return getApplicationContext().getString(R.string.prefs_instant_upload_target_accounts_whitelist_empty);
         } else if (whitelistAccountNames.size() == 1) {
             return whitelistAccountNames.get(0);
