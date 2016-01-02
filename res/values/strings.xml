@@ -34,6 +34,7 @@
     <string name="prefs_accounts">Accounts</string>
     <string name="prefs_manage_accounts">Manage Accounts</string>
     <string name="prefs_passcode">Passcode lock</string>
+    <string name="prefs_instant_upload_target_accounts">Target account(s)</string>
     <string name="prefs_instant_upload_target_accounts_whitelist">Accounts white list</string>
     <string name="prefs_instant_upload_target_accounts_whitelist_empty">No white-listed accounts yet</string>
     <string name="prefs_instant_upload_target_accounts_whitelist_one_plus_n_more">%1$s and %2$s more</string>

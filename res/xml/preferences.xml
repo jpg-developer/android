@@ -29,8 +29,8 @@
 
 		<com.owncloud.android.ui.dialog.OwnCloudListPreference
 			android:key="prefs_instant_upload_target_accounts_mode"
-			android:dialogTitle="xxx Target account(s) (1)"
-			android:title="xxx Target account(s) (2)"
+			android:dialogTitle="@string/prefs_instant_upload_target_accounts"
+			android:title="@string/prefs_instant_upload_target_accounts"
 			android:entries="@array/pref_instant_upload_target_accounts_mode_entries"
 			android:entryValues="@array/pref_instant_upload_target_accounts_mode_entryValues"
 			android:defaultValue="CURRENT"
@@ -38,7 +38,7 @@
 
 		<com.owncloud.android.ui.PreferenceWithLongSummary
 			android:key="prefs_instant_upload_target_accounts_whitelist"
-			android:title="xxx Accounts white list"/>
+			android:title="@string/prefs_instant_upload_target_accounts_whitelist"/>
 
 		<com.owncloud.android.ui.CheckBoxPreferenceWithLongTitle android:key="instant_uploading"
 	                        android:title="@string/prefs_instant_upload"
