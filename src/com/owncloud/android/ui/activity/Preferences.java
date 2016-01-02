@@ -585,14 +585,13 @@ public class Preferences extends PreferenceActivity
         }
     }
 
-    private String formatPrefInstantUploadTargetAccountsWhitelistSummary(Context context) {
-        return formatPrefInstantUploadTargetAccountsWhitelistSummary( getPreferenceValueInstantUploadTargetAccountsWhitelist(context) );
-    }
-
     private String formatPrefInstantUploadTargetAccountsWhitelistSummary(List<String> whitelistAccountNames) {
         if (whitelistAccountNames.size() == 0) {
-            // This should not be happening.
-            // If it does, it means we screwed somewhere else.
+            // At the time of this writing we worked under the assumption that this Activity can
+            // only be displayed once the user has added at least one account.
+            // Under that assumption, the condition leading to executing this block should never
+            // be met. If it does, it means either the initial assumption is no longer valid or
+            // we simply screwed somewhere else.
             assert false;
             return "xxx Has no white-listed accounts!";
         } else if (whitelistAccountNames.size() == 1) {
