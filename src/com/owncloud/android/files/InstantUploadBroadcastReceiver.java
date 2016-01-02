@@ -29,6 +29,7 @@ import com.owncloud.android.authentication.AccountUtils;
 import com.owncloud.android.db.DbHandler;
 import com.owncloud.android.files.services.FileUploader;
 import com.owncloud.android.lib.common.utils.Log_OC;
+import com.owncloud.android.ui.activity.Preferences;
 import com.owncloud.android.utils.FileStorageUtils;
 
 
@@ -265,12 +266,23 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         return result;
     }
 
-    // JPG TODO: current implementation of this method mimics original behavior, i.e. target account
-    //           equals current account; need to expand this method so that it supports the following
-    //           options too:
-    //              - targe t all
-    //              - target whitelist
     private List<Account> resolveTargetAccounts(Context context) {
+
+        String targetAccountsMode = Preferences.getPreferenceValueInstantUploadTargetAccountsMode(context);
+
+        if (targetAccountsMode.equals("CURRENT")) {
+            List<Account> result = new ArrayList<>();
+            result.add( AccountUtils.getCurrentOwnCloudAccount(context) );
+            return result;
+        } else if (targetAccountsMode.equals("ALL")) {
+            return AccountUtils.getAllOwnCloudAccounts(context);
+        } else if (targetAccountsMode.equals("WHITELIST")) {
+            return geWhiteListedAccounts();
+        } else {
+            assert false;
+            Log_OC.d(TAG, "unknown target-accounts-mode value: " + targetAccountsMode);
+            return new ArrayList<>();
+        }
 
         // DEFAULT IMPLEMENTATION: current account
         //List<Account> result = new ArrayList<>();
@@ -281,7 +293,13 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         //return AccountUtils.getAllOwnCloudAccounts(context);
 
         // ALTERNATIVE IMPLEMENTATION 1: white-list
-        return getSampleWhiteListedAccounts();
+        //return getSampleWhiteListedAccounts();
+    }
+
+    private List<Account> geWhiteListedAccounts() {
+        List<Account> result = new ArrayList<>();
+        // JPG TODO
+        return result;
     }
 
     // JPG TODO: debug only!
