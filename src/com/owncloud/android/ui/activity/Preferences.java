@@ -62,6 +62,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.owncloud.android.BuildConfig;
 import com.owncloud.android.MainApp;
@@ -77,6 +78,7 @@ import com.owncloud.android.files.services.FileUploader;
 import com.owncloud.android.lib.common.utils.Log_OC;
 import com.owncloud.android.services.OperationsService;
 import com.owncloud.android.ui.RadioButtonPreference;
+import com.owncloud.android.ui.dialog.OwnCloudListPreference;
 import com.owncloud.android.utils.DisplayUtils;
 
 
@@ -105,6 +107,8 @@ public class Preferences extends PreferenceActivity
     private boolean mShowContextMenu = false;
     private String mUploadPath;
     private PreferenceCategory mPrefInstantUploadCategory;
+    private Preference mPrefInstantUploadTargetAccountsMode;
+    private Preference mPrefInstantUploadTargetAccountsWhitelist;
     private Preference mPrefInstantUpload;
     private Preference mPrefInstantUploadBehaviour;
     private Preference mPrefInstantUploadPath;
@@ -402,8 +406,42 @@ public class Preferences extends PreferenceActivity
         
         mPrefInstantUploadCategory =
                 (PreferenceCategory) findPreference("instant_uploading_category");
-        
-        mPrefInstantUploadPathWiFi =  findPreference("instant_upload_on_wifi");
+
+
+        mPrefInstantUploadTargetAccountsMode = findPreference("prefs_instant_upload_target_accounts_mode");
+        mPrefInstantUploadTargetAccountsMode.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+          @Override
+          public boolean onPreferenceChange(Preference preference, Object newValue) {
+            // JPG TODO: toast is debug only
+            final String value = (String) newValue;
+            Toast.makeText(getApplicationContext(), "New value is: " + value, Toast.LENGTH_SHORT).show();
+            // JPG TODO: show/hide whitelist-preference based on new value
+            return true;
+          }
+        });
+        // JPG TODO: debug only
+        mPrefInstantUploadTargetAccountsMode.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+          @Override
+          public boolean onPreferenceClick(Preference preference) {
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            final String value = sharedPreferences.getString("prefs_instant_upload_target_accounts_mode", "ALL");
+            Toast.makeText(getApplicationContext(), "Initial value is: " + value, Toast.LENGTH_SHORT).show();
+            return true;
+          }
+        });
+
+
+        mPrefInstantUploadTargetAccountsWhitelist = findPreference("prefs_instant_upload_target_accounts_whitelist");
+        mPrefInstantUploadTargetAccountsWhitelist.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+          @Override
+          public boolean onPreferenceClick(Preference preference) {
+            Toast.makeText(getApplicationContext(), "TODO: show white-list dialog", Toast.LENGTH_SHORT).show();
+            return true;
+          }
+        });
+
+
+      mPrefInstantUploadPathWiFi =  findPreference("instant_upload_on_wifi");
         mPrefInstantUpload = findPreference("instant_uploading");
         
         toggleInstantPictureOptions(((CheckBoxPreference) mPrefInstantUpload).isChecked());
