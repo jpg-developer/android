@@ -439,7 +439,7 @@ public class Preferences extends PreferenceActivity
             SelectAccountsFromListTask.start(activity,
                                              getString(R.string.prefs_instant_upload_target_accounts_whitelist),
                                              AccountUtils.getAllOwnCloudAccounts(getApplicationContext()),
-                                             getPreferenceValueInstantUploadTargetAccountsWhitelist(getApplicationContext()), //extractNames(AccountUtils.getAllOwnCloudAccounts(getApplicationContext())),
+                                             getPreferenceValueInstantUploadTargetAccountsWhitelist(getApplicationContext()),
                                              listener);
             return true;
           }
