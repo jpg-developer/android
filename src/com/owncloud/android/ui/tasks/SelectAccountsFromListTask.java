@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 
+import com.owncloud.android.R;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,8 +56,8 @@ public class SelectAccountsFromListTask
     builder.setMultiChoiceItems(namesOfAccountsInList.toArray(new CharSequence[namesOfAccountsInList.size()]),
                                 itemsCheckingState, //createItemsCheckedStateArray(accounts, preSelectedAccountNames),
                                 onMultiChoiceClickListener);
-    builder.setPositiveButton("xxx OK", onClickListener);
-    builder.setNegativeButton("xxx Cancel", null);
+    builder.setPositiveButton(activity.getString(R.string.common_ok), onClickListener);
+    builder.setNegativeButton(activity.getString(R.string.common_cancel), null);
     builder.create().show();
   }
 
