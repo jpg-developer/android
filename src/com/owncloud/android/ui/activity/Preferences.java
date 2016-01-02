@@ -1052,12 +1052,18 @@ public class Preferences extends PreferenceActivity
 
     // JPG TODO: move to a general purpose helper class such as Strings
     static private List<String> splitCommaSeparatedValues(String commaSeparatedList) {
-        if (commaSeparatedList.isEmpty()) {
-            return new ArrayList<>();
-        } else {
-            List<String> items = Arrays.asList(commaSeparatedList.split("\\s*,\\s*"));
-            return items;
+        List<String> items = Arrays.asList(commaSeparatedList.split("\\s*,\\s*"));
+        return filterOutEmptyItems(items);
+    }
+
+    static private List<String> filterOutEmptyItems(List<String> items) {
+        List<String> filteredItems = new ArrayList<>();
+        for (String item: items) {
+            if (!item.isEmpty()) {
+                filteredItems.add(item);
+            }
         }
+        return filteredItems;
     }
 
     // JPG TODO: move to a general purpose helper class such as Strings
