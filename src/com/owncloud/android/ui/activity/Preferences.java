@@ -412,10 +412,7 @@ public class Preferences extends PreferenceActivity
         mPrefInstantUploadTargetAccountsMode.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
           @Override
           public boolean onPreferenceChange(Preference preference, Object newValue) {
-            // JPG TODO: toast is debug only
-            final String value = (String) newValue;
-            Toast.makeText(getApplicationContext(), "New value is: " + value, Toast.LENGTH_SHORT).show();
-            // JPG TODO: show/hide whitelist-preference based on new value
+            toggleInstantUploadTargetAccountsWhitelist((String)newValue);
             return true;
           }
         });
@@ -524,6 +521,14 @@ public class Preferences extends PreferenceActivity
     // JPG TODO:  AS far as I know, "toggle" implies changing to the opposite value.
     //            This function is not "toggling" the value but rather "setting" a specific value.
     //            Therefore please consider renaming this and similar methods to "setXxx(..)"
+    //
+    //            Furthermore, I also realize the "something" in these toggleSomething(value) methods
+    //            refers not to what is going to be changed within the method but to what has already
+    //            changed. That makes an even stronger point to rename methods in a way that such
+    //            pattern is reflected, as in handleSomethingChanged(value)
+    //            E.g.  - handleInstantPictureOptionsChanged(..)
+    //                  - handleInstantPictureOptionsToggled(..)
+    //                  - ...
     private void toggleInstantPictureOptions(Boolean value){
         if (value){
             mPrefInstantUploadCategory.addPreference(mPrefInstantUploadPathWiFi);
@@ -549,6 +554,16 @@ public class Preferences extends PreferenceActivity
             mPrefInstantUploadCategory.addPreference(mPrefInstantUploadBehaviour);
         } else {
             mPrefInstantUploadCategory.removePreference(mPrefInstantUploadBehaviour);
+        }
+    }
+
+    // JPG TODO: as explained in comment above, I don't agree with current naming approach,
+    //           still keeping it for consistency
+    private void toggleInstantUploadTargetAccountsWhitelist(String targetAccountsMode) {
+        if (targetAccountsMode.equals("WHITELIST")) {
+          mPrefInstantUploadCategory.addPreference(mPrefInstantUploadTargetAccountsWhitelist);
+        } else {
+          mPrefInstantUploadCategory.removePreference(mPrefInstantUploadTargetAccountsWhitelist);
         }
     }
 
@@ -602,6 +617,9 @@ public class Preferences extends PreferenceActivity
 
         // Populate the accounts category with the list of accounts
         addAccountsCheckboxPreferences();
+
+        // show/hide accounts-whitelist preference based on target-accounts-mode value
+        toggleInstantUploadTargetAccountsWhitelist( getPreferenceValueInstantUploadTargetAccountsMode(getApplicationContext()) );
     }
 
     @Override
@@ -958,5 +976,10 @@ public class Preferences extends PreferenceActivity
                 mUploaderBinder = null;
             }
         }
-    };
+    }
+
+    static public String getPreferenceValueInstantUploadTargetAccountsMode(Context context) {
+      SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+      return sharedPreferences.getString("prefs_instant_upload_target_accounts_mode", "ALL");
+    }
 }
