@@ -85,6 +85,7 @@ import com.owncloud.android.utils.DisplayUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -441,10 +442,8 @@ public class Preferences extends PreferenceActivity
             SelectAccountsFromListTask.Listener listener = new SelectAccountsFromListTask.Listener() {
               @Override
               public void onSelectedAccounts(List<Account> selectedAccounts) {
-                final String message = "Selected " + selectedAccounts.size() + " item(s): " + extractNames(selectedAccounts);
-                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-
-                setPreferenceValueInstantUploadTargetAccountsWhitelist(getApplicationContext(), extractNames(selectedAccounts));
+                  setPreferenceValueInstantUploadTargetAccountsWhitelist(getApplicationContext(), extractNames(selectedAccounts));
+                  updateDisplayInstantUploadTargetAccountsWhitelistSummary( extractNames(selectedAccounts) );
               }
             };
             SelectAccountsFromListTask.start(activity,
@@ -580,9 +579,28 @@ public class Preferences extends PreferenceActivity
     //           still keeping it for consistency
     private void toggleInstantUploadTargetAccountsWhitelist(String targetAccountsMode) {
         if (targetAccountsMode.equals("WHITELIST") && hasMultipleAccounts()) {
-          mPrefInstantUploadCategory.addPreference(mPrefInstantUploadTargetAccountsWhitelist);
+            mPrefInstantUploadCategory.addPreference(mPrefInstantUploadTargetAccountsWhitelist);
         } else {
-          mPrefInstantUploadCategory.removePreference(mPrefInstantUploadTargetAccountsWhitelist);
+            mPrefInstantUploadCategory.removePreference(mPrefInstantUploadTargetAccountsWhitelist);
+        }
+    }
+
+    private String formatPrefInstantUploadTargetAccountsWhitelistSummary(Context context) {
+        return formatPrefInstantUploadTargetAccountsWhitelistSummary( getPreferenceValueInstantUploadTargetAccountsWhitelist(context) );
+    }
+
+    private String formatPrefInstantUploadTargetAccountsWhitelistSummary(List<String> whitelistAccountNames) {
+        if (whitelistAccountNames.size() == 0) {
+            // This should not be happening.
+            // If it does, it means we screwed somewhere else.
+            assert false;
+            return "xxx Has no white-listed accounts!";
+        } else if (whitelistAccountNames.size() == 1) {
+            return whitelistAccountNames.get(0);
+        } else {
+            // JPG TODO: Q: need to resolve locale value at runtime?
+            final String template = "xxx %s and %d more";
+            return String.format(Locale.US, template, whitelistAccountNames.get(0), whitelistAccountNames.size() - 1);
         }
     }
 
@@ -592,6 +610,15 @@ public class Preferences extends PreferenceActivity
         } else {
           mPrefInstantUploadCategory.removePreference(mPrefInstantUploadTargetAccountsMode);
         }
+    }
+
+    private void updateDisplayInstantUploadTargetAccountsWhitelistSummary(Context context) {
+        final List<String> whitelistAccountNames = getPreferenceValueInstantUploadTargetAccountsWhitelist(context);
+        updateDisplayInstantUploadTargetAccountsWhitelistSummary(whitelistAccountNames);
+    }
+
+    private void updateDisplayInstantUploadTargetAccountsWhitelistSummary(List<String> whitelistAccountNames) {
+        mPrefInstantUploadTargetAccountsWhitelist.setSummary( formatPrefInstantUploadTargetAccountsWhitelistSummary(whitelistAccountNames) );
     }
 
     private boolean hasMultipleAccounts() {
@@ -655,6 +682,8 @@ public class Preferences extends PreferenceActivity
 
         // show/hide accounts-whitelist preference based on target-accounts-mode value
         toggleInstantUploadTargetAccountsWhitelist( getPreferenceValueInstantUploadTargetAccountsMode(getApplicationContext()) );
+
+        updateDisplayInstantUploadTargetAccountsWhitelistSummary(getApplicationContext());
     }
 
     @Override
