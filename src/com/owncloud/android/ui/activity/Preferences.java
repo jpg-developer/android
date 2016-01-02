@@ -142,7 +142,10 @@ public class Preferences extends PreferenceActivity
         // Load the accounts category for adding the list of accounts
         mAccountsPrefCategory = (PreferenceCategory) findPreference("accounts_category");
 
-        ListView listView = getListView();
+        ListView listView = getListView();  // JPG TODO: what's the point of this statement? object is used only
+                                            //           in one place; plus, first line of the onItemLongClick(..)
+                                            //           does create another object with the same name, which IMO
+                                            //           helps confusion
         listView.setOnItemLongClickListener(new OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -204,7 +207,13 @@ public class Preferences extends PreferenceActivity
                 return false;
             }
         });
-        
+
+
+        // JPG TODO:  please help simplify this function by extracting the following block
+        //            to its own helper method
+        //            Also, appVersion is used miles away, therefore this is not the best
+        //            place to resolve its value.
+
         // Load package info
         String temp;
         try {
@@ -463,7 +472,10 @@ public class Preferences extends PreferenceActivity
         }
 
     }
-    
+
+    // JPG TODO:  AS far as I know, "toggle" implies changing to the opposite value.
+    //            This function is not "toggling" the value but rather "setting" a specific value.
+    //            Therefore please consider renaming this and similar methods to "setXxx(..)"
     private void toggleInstantPictureOptions(Boolean value){
         if (value){
             mPrefInstantUploadCategory.addPreference(mPrefInstantUploadPathWiFi);
