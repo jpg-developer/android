@@ -446,7 +446,7 @@ public class Preferences extends PreferenceActivity
         });
 
 
-      mPrefInstantUploadPathWiFi =  findPreference("instant_upload_on_wifi");
+        mPrefInstantUploadPathWiFi = findPreference("instant_upload_on_wifi");
         mPrefInstantUpload = findPreference("instant_uploading");
         
         toggleInstantPictureOptions(((CheckBoxPreference) mPrefInstantUpload).isChecked());
@@ -526,17 +526,17 @@ public class Preferences extends PreferenceActivity
 
     }
 
-    // JPG TODO:  AS far as I know, "toggle" implies changing to the opposite value.
+    // JPG TODO:  According to http://dictionary.cambridge.org/dictionary/english/toggle ,
+    //            "toggle" implies changing to the opposite value.
     //            This function is not "toggling" the value but rather "setting" a specific value.
     //            Therefore please consider renaming this and similar methods to "setXxx(..)"
     //
-    //            Furthermore, I also realize the "something" in these toggleSomething(value) methods
-    //            refers not to what is going to be changed within the method but to what has already
-    //            changed. That makes an even stronger point to rename methods in a way that such
+    //            Furthermore, the "something" in these toggleSomething(value) methods refers
+    //            not to what is going to be changed within the method but to what has already
+    //            changed. That makes IMO an even stronger point to rename methods in a way that such
     //            pattern is reflected, as in handleSomethingChanged(value)
     //            E.g.  - handleInstantPictureOptionsChanged(..)
     //                  - handleInstantPictureOptionsToggled(..)
-    //                  - ...
     private void toggleInstantPictureOptions(Boolean value){
         if (value){
             mPrefInstantUploadCategory.addPreference(mPrefInstantUploadPathWiFi);
@@ -1056,6 +1056,7 @@ public class Preferences extends PreferenceActivity
         return filterOutEmptyItems(items);
     }
 
+    // JPG TODO: move to a general purpose helper class such as Strings
     static private List<String> filterOutEmptyItems(List<String> items) {
         List<String> filteredItems = new ArrayList<>();
         for (String item: items) {

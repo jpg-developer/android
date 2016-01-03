@@ -50,7 +50,9 @@ import android.webkit.MimeTypeMap;
 //              Reason is, this class does not receive broadcasts regarding instant-uploads.
 //              It receives broadcasts regarding new photos/videos; instant-upload is what the class
 //              does out of the information it receives.
-//              The following name describes IMO this class in a better way: NewPictureOrVideoBroadcastReceiver
+//              Consider the following alternative names:
+//              - NewPictureOrVideoBroadcastReceiver
+//              - NewMediaFileBroadcastReceiver
 public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
 
     private static String TAG = InstantUploadBroadcastReceiver.class.getName();

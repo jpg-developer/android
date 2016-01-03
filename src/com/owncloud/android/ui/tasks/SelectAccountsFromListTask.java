@@ -20,7 +20,7 @@ public class SelectAccountsFromListTask
   }
 
   static public void start(final Activity      activity,
-                           final String        title,
+                           final String        dialogTitle,
                            final List<Account> accounts,
                            final List<String>  preSelectedAccountNames,
                            final Listener      listener) {
@@ -52,9 +52,9 @@ public class SelectAccountsFromListTask
             };
 
     AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-    builder.setTitle(title);
+    builder.setTitle(dialogTitle);
     builder.setMultiChoiceItems(namesOfAccountsInList.toArray(new CharSequence[namesOfAccountsInList.size()]),
-                                itemsCheckingState, //createItemsCheckedStateArray(accounts, preSelectedAccountNames),
+                                itemsCheckingState,
                                 onMultiChoiceClickListener);
     builder.setPositiveButton(activity.getString(R.string.common_ok), onClickListener);
     builder.setNegativeButton(activity.getString(R.string.common_cancel), null);
