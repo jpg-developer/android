@@ -101,7 +101,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         Log_OC.d(TAG, "Target account(s) include: " + targetAccounts.toString());
 
         // save always temporally the picture to upload
-        // JPG TODO: Q: why is this done for pictures only? why not for videos?
+        // JPG TODO: Q: why is this done for pictures only? why not for videos? bug or intended?
         for (Account account: targetAccounts) {
             saveFileToUploadIntoDatabase(context, account, mediaContentEntry);
         }
@@ -163,6 +163,15 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             Log_OC.d(TAG, "Not online, do nothing");
             return;
         }
+
+        // JPG TODO: Q: in principle this method does not strike like being limited to pictures only,
+        //              however we the instant-upload-pictures-when-wifi-only flag but not the
+        //              instant-upload-videos-when-wifi-only. Is that intended or a bug??
+        //              Feels like a bug, but it is actually consistent with calling the
+        //              saveFileToUploadIntoDatabase(..) method only for pictures (see comment above)
+        //
+        // JPG TODO: Q: in any case, if this is intended then such exceptional behavior should be
+        //              made explicit by being the subject of an explanatory comment.
 
         if (instantPictureUploadViaWiFiOnly(context) && !isConnectedViaWiFi(context)) {
             Log_OC.d(TAG, "Not connected to wifi, do nothing");
