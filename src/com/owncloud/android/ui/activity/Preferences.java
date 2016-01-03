@@ -63,7 +63,6 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.owncloud.android.BuildConfig;
 import com.owncloud.android.MainApp;
@@ -85,7 +84,6 @@ import com.owncloud.android.utils.DisplayUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 
 /**
@@ -204,6 +202,15 @@ public class Preferences extends PreferenceActivity
                                         am.removeAccount(a, Preferences.this, mHandler);
                                         Log_OC.d(TAG, "Remove an account " + a.name);
                                         alertDialog.cancel();
+
+                                        // Update instant-upload target-accounts whitelist if needed
+                                        final List<String> whitelist = getPreferenceValueInstantUploadTargetAccountsWhitelist(getApplicationContext());
+                                        final List<String> updatedWhitelist = filterOutItemsMatchingValue(whitelist, a.name);
+                                        if (whitelist.size() != updatedWhitelist.size()) {
+                                            Log_OC.d(TAG, "Update instant-upload target-accounts whitelist");
+                                            setPreferenceValueInstantUploadTargetAccountsWhitelist(getApplicationContext(), updatedWhitelist);
+                                            updateDisplayInstantUploadTargetAccountsWhitelistSummary(updatedWhitelist);
+                                        }
                                     }
                                 }
                             }
@@ -1061,6 +1068,17 @@ public class Preferences extends PreferenceActivity
         List<String> filteredItems = new ArrayList<>();
         for (String item: items) {
             if (!item.isEmpty()) {
+                filteredItems.add(item);
+            }
+        }
+        return filteredItems;
+    }
+
+    // JPG TODO: move to a general purpose helper class such as Strings
+    static private List<String> filterOutItemsMatchingValue(List<String> items, String targetItem) {
+        List<String> filteredItems = new ArrayList<>();
+        for (String item: items) {
+            if (!item.equals(targetItem)) {
                 filteredItems.add(item);
             }
         }
