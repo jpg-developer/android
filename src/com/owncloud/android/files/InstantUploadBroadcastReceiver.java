@@ -46,13 +46,6 @@ import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Video;
 import android.webkit.MimeTypeMap;
 
-// JPG TODO:    This name could be argued to be misleading,
-//              Reason is, this class does not receive broadcasts regarding instant-uploads.
-//              It receives broadcasts regarding new photos/videos; instant-upload is what the class
-//              does out of the information it receives.
-//              Consider the following alternative names:
-//              - NewPictureOrVideoBroadcastReceiver
-//              - NewMediaFileBroadcastReceiver
 public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
 
     private static String TAG = InstantUploadBroadcastReceiver.class.getName();
@@ -85,14 +78,20 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
     }
 
     private void handleNewPictureAction(Context context, Intent intent) {
-        Log_OC.w(TAG, "New photo received");
-        
+
         if (!instantPictureUploadEnabled(context)) {
-            Log_OC.d(TAG, "Instant picture upload disabled, ignoring new picture");
+            Log_OC.d(TAG, "Instant picture upload disabled, ignore new picture");
             return;
         }
 
-        // JPG TODO: review the order of the statements in this method
+        final MediaContentEntry mediaContentEntry = resolveMediaContent(context, intent, PICTURE_CONTENT_PROJECTION);
+        if (mediaContentEntry == null) {
+            Log_OC.e(TAG, "Failed to resolve new picture!");
+            return;
+        }
+
+        Log_OC.d(TAG, "New picture: " + mediaContentEntry.file_path + "");
+
         final List<Account> targetAccounts = resolveTargetAccounts(context);
         if (targetAccounts.size() == 0) {
             Log_OC.w(TAG, "No ownCloud account found for instant upload, aborting");
@@ -101,24 +100,18 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
 
         Log_OC.d(TAG, "Target account(s) include: " + targetAccounts.toString());
 
-        MediaContentEntry mediaContentEntry = resolveMediaContent(context, intent, PICTURE_CONTENT_PROJECTION);
-        if (mediaContentEntry == null) {
-            Log_OC.e(TAG, "Failed to resolve new picture!");
-            return;
+        // save always temporally the picture to upload
+        // JPG TODO: Q: why is this done for pictures only? why not for videos?
+        for (Account account: targetAccounts) {
+            saveFileToUploadIntoDatabase(context, account, mediaContentEntry);
         }
 
-        Log_OC.d(TAG, mediaContentEntry.file_path + "");
-
         if (needToPosponeFileUploading(context)) {
-            Log_OC.d(TAG, "Not a good time to upload a file, postpone!");
+            Log_OC.d(TAG, "Not a good time to upload files, postpone!");
             return;
         }
 
         for (Account account: targetAccounts) {
-            // save always temporally the picture to upload
-            // JPG TODO: Q: why is this done for pictures only? why not for videos?
-            saveFileToUploadIntoDatabase(context, account, mediaContentEntry);
-
             context.startService(createFileUploadingIntent(context, account, mediaContentEntry));
         }
     }
@@ -131,18 +124,21 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        // JPG TODO: review the order of the statements in this method
+        final MediaContentEntry mediaContentEntry = resolveMediaContent(context, intent, VIDEO_CONTENT_PROJECTION);
+        if (mediaContentEntry == null) {
+            Log_OC.e(TAG, "Failed to resolve new video!");
+            return;
+        }
+
+        Log_OC.d(TAG, "New video: " + mediaContentEntry.file_path + "");
+
         final List<Account> targetAccounts = resolveTargetAccounts(context);
         if (targetAccounts.size() == 0) {
             Log_OC.w(TAG, "No ownCloud account found for instant upload, aborting");
             return;
         }
 
-        MediaContentEntry mediaContentEntry = resolveMediaContent(context, intent, VIDEO_CONTENT_PROJECTION);
-        if (mediaContentEntry == null) {
-            Log_OC.e(TAG, "Failed to resolve new video!");
-            return;
-        }
+        Log_OC.d(TAG, "Target account(s) include: " + targetAccounts.toString());
 
         if (needToPosponeFileUploading(context)) {
             Log_OC.d(TAG, "Not a good time to upload a file, postpone!");
