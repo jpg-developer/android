@@ -111,9 +111,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        for (Account account: targetAccounts) {
-            context.startService(createFileUploadingIntent(context, account, mediaContentEntry));
-        }
+        requestFileUploads(context, mediaContentEntry, targetAccounts);
     }
 
     private void handleNewVideoAction(Context context, Intent intent) {
@@ -145,9 +143,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        for (Account account: targetAccounts) {
-            context.startService(createFileUploadingIntent(context, account, mediaContentEntry));
-        }
+        requestFileUploads(context, mediaContentEntry, targetAccounts);
     }
 
     private void handleConnectivityAction(Context context, Intent intent) {
@@ -173,7 +169,20 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
+        // JPG TODO:    Current implementation does not update awaiting-file records accordingly
+        //              when an account is deleted. Result is, code below will try to upload the file.
+        //              Tests show the file is not actually being uploaded for removed accounts, nor
+        //              is the record kept in the database.
+        //              Despite not resulting in a buggy behavior, we might want change current
+        //              implementation so that corresponding awaiting-file records are removed when
+        //              deleting an account.
+
+        final List<AwaitingFileRecord> awaitingFileRecords = getAwaitingFileRecords(context);
+
+        Log_OC.d(TAG, "" + awaitingFileRecords.size() + " awaiting file records(s): " + awaitingFileRecords.toString());
+
         for (AwaitingFileRecord awaitingFileRecord: getAwaitingFileRecords(context)) {
+
             File f = new File(awaitingFileRecord.file_path);
             if (f.exists()) {
                 Account account = new Account(awaitingFileRecord.account_name, MainApp.getAccountType());
@@ -203,10 +212,11 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
                 // instant upload behaviour
                 i = addInstantUploadBehaviour(i, context);
 
+                Log_OC.d(TAG, "Requesting awaiting file upload: " + f.getName() + ", " + account.name);
+
                 context.startService(i);
             } else {
                 Log_OC.w(TAG, "Instant upload file " + f.getAbsolutePath() + " does not exist anymore");
-                // JPG TODO: is recorg being removed from database? or does it stay there forever...?
             }
         }
     }
@@ -214,6 +224,10 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
     static class AwaitingFileRecord {
         String account_name;
         String file_path;
+
+        public String toString() {
+            return file_path + "@" + account_name;
+        }
     }
 
     private List<AwaitingFileRecord> getAwaitingFileRecords(Context context) {
@@ -226,6 +240,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
                 AwaitingFileRecord record = new AwaitingFileRecord();
                 record.account_name = c.getString(c.getColumnIndex("account"));
                 record.file_path    = c.getString(c.getColumnIndex("path"));
+                result.add(record);
             } while (c.moveToNext());
         }
         c.close();
@@ -234,11 +249,10 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         return result;
     }
 
-    static class MediaContentEntry
-    {
-        String file_path = null;
-        String file_name = null;
-        String mime_type = null;
+    static class MediaContentEntry {
+        String file_path;
+        String file_name;
+        String mime_type;
     }
 
     private static final String[] PICTURE_CONTENT_PROJECTION = { Images.Media.DATA, Images.Media.DISPLAY_NAME, Images.Media.MIME_TYPE, Images.Media.SIZE };
@@ -325,7 +339,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         db.close();
     }
 
-    private Intent createFileUploadingIntent(Context context, Account account, MediaContentEntry mediaContentEntry) {
+    private static Intent createFileUploadingIntent(Context context, Account account, MediaContentEntry mediaContentEntry) {
         Intent intent = new Intent(context, FileUploader.class);
         intent.putExtra(FileUploader.KEY_ACCOUNT, account);
         intent.putExtra(FileUploader.KEY_LOCAL_FILE, mediaContentEntry.file_path);
@@ -339,7 +353,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         return intent;
     }
 
-    private Intent addInstantUploadBehaviour(Intent i, Context context) {
+    private static Intent addInstantUploadBehaviour(Intent i, Context context) {
         SharedPreferences appPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         String behaviour = appPreferences.getString("prefs_instant_behaviour", "NOTHING");
 
@@ -390,5 +404,14 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
     // JPG TODO: why public? whe else is using this code??
     public static boolean instantVideoUploadViaWiFiOnly(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean("instant_video_upload_on_wifi", false);
+    }
+
+    private static void requestFileUploads(Context           context,
+                                           MediaContentEntry mediaContentEntry,
+                                           List<Account>     targetAccounts) {
+        for (Account account: targetAccounts) {
+            Log_OC.w(TAG, "Requesting file upload: " + mediaContentEntry.file_name + ", " + account.name);
+            context.startService(createFileUploadingIntent(context, account, mediaContentEntry));
+        }
     }
 }
