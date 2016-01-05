@@ -106,7 +106,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
             saveFileToUploadIntoDatabase(context, account, mediaContentEntry);
         }
 
-        if (needToPosponeFileUploading(context)) {
+        if (needToPosponePictureUploading(context)) {
             Log_OC.d(TAG, "Not a good time to upload files, postpone!");
             return;
         }
@@ -138,7 +138,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
 
         Log_OC.d(TAG, "Target account(s) include: " + targetAccounts.toString());
 
-        if (needToPosponeFileUploading(context)) {
+        if (needToPosponeVideoUploading(context)) {
             Log_OC.d(TAG, "Not a good time to upload a file, postpone!");
             return;
         }
@@ -377,7 +377,11 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         return i;
     }
 
-    private boolean needToPosponeFileUploading(Context context) {
+    private boolean needToPosponePictureUploading(Context context) {
+        return !isOnline(context) || (instantPictureUploadViaWiFiOnly(context) && !isConnectedViaWiFi(context));
+    }
+
+    private boolean needToPosponeVideoUploading(Context context) {
         return !isOnline(context) || (instantVideoUploadViaWiFiOnly(context) && !isConnectedViaWiFi(context));
     }
 
