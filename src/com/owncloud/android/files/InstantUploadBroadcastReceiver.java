@@ -165,7 +165,7 @@ public class InstantUploadBroadcastReceiver extends BroadcastReceiver {
         }
 
         // JPG TODO: Q: in principle this method does not strike like being limited to pictures only,
-        //              however we the instant-upload-pictures-when-wifi-only flag but not the
+        //              however we check the instant-upload-pictures-when-wifi-only flag but not the
         //              instant-upload-videos-when-wifi-only. Is that intended or a bug??
         //              Feels like a bug, but it is actually consistent with calling the
         //              saveFileToUploadIntoDatabase(..) method only for pictures (see comment above)
